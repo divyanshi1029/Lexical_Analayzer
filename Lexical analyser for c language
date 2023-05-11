@@ -1,0 +1,207 @@
+<html>
+<head>
+  <title>C Compiler by Group 3</title>
+
+	<style>
+		body {
+			font-family: Arial, sans-serif;
+			background-color: white;
+		}
+		.tab {
+			overflow: hidden;
+			background-color: #333;
+		}
+		  #header {
+      background-color: blue;
+      color: white;
+      padding: 20px;
+      text-align: center;
+      font-size: 30px;
+      border-top: 5px cyan;
+      border-bottom: 5px purple;
+    }
+    ul {
+      list-style-type: none;
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      background-color:purple;
+    }
+
+    li {
+      float: left;
+    }
+
+    li a {
+      display: block;
+      color: white;
+      text-align: center;
+      padding: 14px 16px;
+      text-decoration: none;
+    }
+
+    li a:hover {
+      background-color: blue;
+    }
+		.tab button {
+			background-color: #4CAF50;
+			float: left;
+			color: white;
+			border: none;
+			outline: none;
+			cursor: pointer;
+			padding: 14px 16px;
+			transition: 0.3s;
+			font-size: 17px;
+		}
+		.tab button:hover {
+		     background-color: blue;
+      color: white;
+      padding: 14px 20px;
+      margin: 8px 0;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 20px;
+		}
+		.tab button.active {
+			background-color: #ccc;
+			color: black;
+		}
+		.tabcontent {
+			display: none;
+			padding: 6px 12px;
+			border: 1px solid #ccc;
+			border-top: none;
+		}
+	</style>
+</head>
+<body>
+  <body>
+    <div id="header">
+    <h1>C Compiler by Group 3</h1>
+  </div>
+	<div class="tab">
+		<button class="tablinks" onclick="openTab(event, 'input')">Input</button>
+		<button class="tablinks" onclick="openTab(event, 'about')">output</button>
+	</div>
+	<div id="input" class="tabcontent">
+		<h3>Input</h3>
+		<form>
+			<label for="input_text">Enter input:</label>
+			<input type="text" id="input_text" name="input_text"><br><br>
+			<button type="button" onclick="saveInput()">Save</button>
+		</form>
+	</div>
+	<div id="about" class="tabcontent">
+		<h3>output</h3>
+		<p id="saved_input"></p>
+		<p id="saved_output"></p>
+
+	</div>
+	<script>
+		class LexicalAnalyzer {
+	// Token row
+	lin_num = 1;
+  
+	tokenize(code) {
+	  const rules = [
+		["MAIN", /main/],                  // main
+		["INT", /int/],                    // int
+		["FLOAT", /float/],                // float
+		["IF", /if/],                      // if
+		["ELSE", /else/],                  // else
+		["WHILE", /while/],                // while
+		["READ", /read/],                  // read
+		["PRINT", /print/],                // print
+		["LBRACKET", /\(/],                // (
+		["RBRACKET", /\)/],                // )
+		["LBRACE", /\{/],                  // {
+		["RBRACE", /\}/],                  // }
+		["COMMA", /,/],     
+		["HASH", /#/],
+		["QUOTES", /"/],       
+		["EXCLAMATION", /!/],                 // ,
+		["PCOMMA", /;/],                   // ;
+		["EQ", /==/],                      // ==
+		["NE", /!=/],                      // !=
+		["LE", /<=/],                      // <=
+		["GE", />=/],                      // >=
+		["OR", /\|\|/],                    // ||
+		["AND", /&&/],                     // &&
+		["ATTR", /=/],                     // =
+		["LT", /</],                       // <
+		["GT", />/],                       // >
+		["PLUS", /\+/],                    // +
+		["MINUS", /-/],                    // -
+		["MULT", /\*/],                    // *
+		["DIV", /\//],                     // /
+		["ID", /[a-zA-Z]\w*/],             // IDENTIFIERS
+		["FLOAT_CONST", /\d(\d)\.\d(\d)/], // FLOAT
+		["INTEGER_CONST", /\d(\d)*/],      // INT
+		["NEWLINE", /\n/],                 // NEW LINE
+		["SKIP", /[ \t]+/],                // SPACE and TABS
+		["MISMATCH", /./],                 // ANOTHER CHARACTER
+	  ];
+  
+	  const tokens_join = rules
+		.map((rule) => `(?<${rule[0]}>${rule[1].source})`)
+		.join("|");
+	  let lin_start = 0;
+  
+	  // Lists of output for the program
+	  const tokens = [];
+	  const lexemes = [];
+	  const rows = [];
+	  const columns = [];
+  
+	  // It analyzes the code to find the lexemes and their respective Tokens
+	  for (const m of code.matchAll(new RegExp(tokens_join, "g"))) {
+		const token_type = Object.keys(m.groups).find((key) => m.groups[key] !== undefined);
+		const token_lexeme = m.groups[token_type];
+  
+		if (token_type === "NEWLINE") {
+		  lin_start = m.index + m[0].length;
+		  this.lin_num++;
+		} else if (token_type === "SKIP") {
+		  continue;
+		} else if (token_type === "MISMATCH") {
+		  throw new Error(`${token_lexeme} unexpected on line ${this.lin_num}`);
+		} else {
+		  const col = m.index - lin_start;
+		  columns.push(col);
+		  tokens.push(token_type);
+		  lexemes.push(token_lexeme);
+		  rows.push(this.lin_num);
+		  // To print information about a Token
+		  console.log(`Token = ${token_type}, Lexeme = '${token_lexeme}', Row = ${this.lin_num}, Column = ${col}`);
+		}
+	  }
+  
+	  return [tokens, lexemes, rows, columns];
+	}
+  }
+		function openTab(evt, tabName) {
+			var i, tabcontent, tablinks;
+			tabcontent = document.getElementsByClassName("tabcontent");
+			for (i = 0; i < tabcontent.length; i++) {
+				tabcontent[i].style.display = "none";
+			}
+			tablinks = document.getElementsByClassName("tablinks");
+			for (i = 0; i < tablinks.length; i++) {
+				tablinks[i].className = tablinks[i].className.replace(" active", "");
+			}
+			document.getElementById(tabName).style.display = "block";
+			evt.currentTarget.className += " active";
+		}
+
+		function saveInput() {
+			var input = document.getElementById("input_text").value;
+			document.getElementById("saved_input").innerHTML = "Saved Input: " + input;
+			var instance = new LexicalAnalyzer()
+			var output = instance.tokenize(input)
+			document.getElementById("saved_output").innerHTML = output;
+		}
+	</script>
+</body>
+</html>
